@@ -20,11 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module Model where
 
-data Expansion = Promo | Basic_E    | Classic | Naxx
-               | GvG   | Blackrock  | TGT     | LoE
-               | TOG   | Kara       | MSG     | UnGoro -- written Un'Goro
-               | KFT
-               deriving (Eq,Ord,Show)
+data Set = Promo | Basic_E    | Classic | Naxx
+         | GvG   | Blackrock  | TGT     | LoE
+         | TOG   | Kara       | MSG     | UnGoro -- written Un'Goro
+         | KFT
+         deriving (Eq,Ord,Show)
 {-
 Ord instance will have sense since the last one is the most recent,
 except for Promo, Show could be implemented better if required
@@ -38,10 +38,10 @@ data Class = Neutral | Druid | Hunter | Mage    | Paladin
 data Rarity = Basic_R | Common | Rare | Epic | Legendary
             deriving (Show,Eq)
 
-data Card = Card {  name      :: String,
-                    clss      :: Class,
-                    rarity    :: Rarity,
-                    expansion :: Expansion
+data Card = Card {  name   :: String,
+                    clss   :: Class,
+                    rarity :: Rarity,
+                    set    :: Set
                  }
 
 type Collection = [Card] 
