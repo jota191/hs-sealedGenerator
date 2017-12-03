@@ -43,5 +43,7 @@ data Card = Card {  name   :: String,
                     rarity :: Rarity,
                     set    :: Set
                  }
+          deriving Show
+
 
 type Collection = [Card] 

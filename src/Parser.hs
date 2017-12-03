@@ -21,54 +21,69 @@ module Parser where
 import ParserCombinators
 import Model
 import Data.Char
+import Prelude hiding ((<|>),(<$>),(<*>))
 
-
+-- | Parses a character, from a name
 pAlphaSpace :: Parser String Char
 pAlphaSpace = Parser $ \s -> case s of
-                               (c:cs) -> if isAlpha c || c == ' '
+                               (c:cs) -> if isAlpha c || c ==' ' || c =='\''
                                          then [(c,cs)]
                                          else []
                                []     -> []
 
+
+-- | Parses a Phrase, that is a word, but NO spacers
 pPhrase :: Parser String String
 pPhrase = pList pAlphaSpace
 
-
+-- | Parses a Name
 pName = pPhrase
--- TODO: this should return a Rarity or fail, not a List
-pRarity :: Parser String [Rarity]
-pRarity = (wrap . readRarity) <$> pPhrase
-  where wrap Nothing  = []
-        wrap (Just a) = [a]
 
-pRarity' :: Parser String Rarity
-pRarity' = Parser $ \s  -> do xs <- runP pPhrase s 
-                              case readRarity xs of
-                                Nothing -> undefined --pFail
-                                Just a  -> return a
+-- | Parses a rarity
+pRarity =   pToken "Basic"     Basic_R
+        <|> pToken "Common"    Common
+        <|> pToken "Rare"      Rare
+        <|> pToken "Epic"      Epic
+        <|> pToken "Legendary" Legendary
 
---pSet :: Parser String [Set]
 
-readRarity :: String -> Maybe Rarity
-readRarity "Basic"     = Just Basic_R
-readRarity "Common"    = Just Common
-readRarity "Rare"      = Just Rare
-readRarity "Epic"      = Just Epic
-readRarity "Legendary" = Just Legendary
-readRarity _           = Nothing
+-- | Parses an expansion Set 
+pSet =  pToken "Promo"     Promo
+    <|> pToken "Basic"     Basic_E
+    <|> pToken "Classic"   Classic
+    <|> pToken "Naxx"      Naxx
+    <|> pToken "GvG"       GvG
+    <|> pToken "Blackrock" Blackrock
+    <|> pToken "TGT"       TGT
+    <|> pToken "LoE"       LoE
+    <|> pToken "TOG"       TOG
+    <|> pToken "Kara"      Kara
+    <|> pToken "MSG"       MSG
+    <|> pToken "Un'Goro"   UnGoro 
+    <|> pToken "KFT"       KFT
 
-readSet :: String -> Maybe Set
-readSet "Promo"     = Just Promo
-readSet "Basic"     = Just Basic_E
-readSet "Classic"   = Just Classic
-readSet "Naxx"      = Just Naxx
-readSet "GvG"       = Just GvG
-readSet "Blackrock" = Just Blackrock
-readSet "TGT"       = Just TGT
-readSet "LoE"       = Just LoE
-readSet "TOG"       = Just TOG
-readSet "Kara"      = Just Kara
-readSet "MSG"       = Just MSG
-readSet "Un'Goro"   = Just UnGoro 
-readSet "KFT"       = Just KFT
-readSet _           = Nothing
+pClass =   pToken "Neutral" Neutral
+      <|> pToken "Druid"    Druid
+      <|> pToken "Hunter"   Hunter
+      <|> pToken "Mage"     Mage
+      <|> pToken "Paladin"  Paladin
+      <|> pToken "Priest"   Priest
+      <|> pToken "Rogue"    Rogue
+      <|> pToken "Shaman"   Shaman
+      <|> pToken "Warlock"  Warlock
+      <|> pToken "Warrior"  Warrior
+
+-- | Parses a separator, commas by now, another kind of char
+--   if we want to support other formats than csv
+pSeparator = Parser $ \s -> case s of
+                              (c:cs) -> if c == ','
+                                        then [(c,cs)]
+                                        else []
+                              [] -> []
+
+
+pCard = (\name _ rarity _ set _ clss _ -> Card name clss rarity set)
+        <$> pName    <*> pSeparator
+        <*> pRarity  <*> pSeparator
+        <*> pSet     <*> pSeparator
+        <*> pClass   <*> pSeparator

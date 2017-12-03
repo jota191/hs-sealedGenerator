@@ -25,7 +25,16 @@ SOFTWARE.
 
 {-# LANGUAGE InstanceSigs #-}
 
-module ParserCombinators where
+module ParserCombinators (Parser(Parser,runP),
+                          pFail,
+                          pSucceed,
+                          pList,
+                          pToken,
+                          (<|>),(<$>),(<*>))
+where
+
+import Data.List
+import Data.Maybe
 
 import Control.Monad
 import Control.Applicative
@@ -40,7 +49,7 @@ instance Monad (Parser s) where
   p >>= q  = Parser $ \s -> concat [runP (q a) s' | (a,s') <- runP p s]
 
 
--- | Parser Combinators
+--Parser Combinators
 
 pFail :: Parser s a
 pFail = Parser $ \s -> []
@@ -53,7 +62,8 @@ instance Alternative (Parser s) where
   (<|>) :: Parser s a -> Parser s a -> Parser s a
   p <|> q = Parser $ \s -> runP p s ++ runP q s
   empty   =  Parser $ \char -> empty
---infixr 6 <|>
+
+
 
 instance Functor (Parser s) where
   fmap :: (a -> b) -> Parser s a -> Parser s b
@@ -67,3 +77,11 @@ instance Applicative (Parser s) where
 pList :: Parser s a -> Parser s [a]
 pList p = (:) <$> p <*> pList p
        <|> pSucceed [] 
+
+-- | Parses the String in the first parameter, returning the second
+pToken :: String -> a -> Parser String a
+pToken lexeme token
+  = Parser $ \s -> if isPrefixOf lexeme s
+                   then [(token,fromJust (stripPrefix lexeme s))]
+                   else []
+
