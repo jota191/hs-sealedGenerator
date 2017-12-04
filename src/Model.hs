@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 module Model where
+import System.Console.ANSI
+
 
 data Set = Promo | Basic_E    | Classic | Naxx
          | GvG   | Blackrock  | TGT     | LoE
@@ -47,3 +49,17 @@ data Card = Card {  name   :: String,
 
 
 type Collection = [Card] 
+
+printCard :: Card -> IO ()
+printCard card = case rarity card of
+                   Basic_R -> setSGR [SetColor Foreground Vivid White]
+                   Common  -> setSGR [SetColor Foreground Vivid White]
+                   Rare    -> setSGR [SetColor Foreground Vivid Blue]
+                   Epic    -> setSGR [SetColor Foreground Vivid Magenta]
+                   Legendary -> setSGR [SetColor Foreground Vivid Yellow]
+                 >>
+                 putStrLn (name card ++ "," ++
+                           show (clss card) ++ "," ++
+                           show (set  card))
+                 >>
+                 setSGR [Reset]
