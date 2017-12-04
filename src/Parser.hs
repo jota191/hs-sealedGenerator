@@ -26,18 +26,32 @@ import Prelude hiding ((<|>),(<$>),(<*>))
 -- | Parses a character, from a name
 pAlphaSpace :: Parser String Char
 pAlphaSpace = Parser $ \s -> case s of
-                               (c:cs) -> if isAlpha c || c ==' ' || c =='\''
+                               (c:cs) -> if isAlphaNum c
+                                            || c ==' '
+                                            || c =='\''
+                                            || c == '!'
+                                            || c == '-'
+                                            || c == ':'
+                                            || c == '.'
                                          then [(c,cs)]
                                          else []
                                []     -> []
 
+pQuotation = Parser $ \s -> case s of
+                              (c:cs) -> if c =='\"'
+                                        then [(c,cs)]
+                                        else []
+                              []     -> []
+
 
 -- | Parses a Phrase, that is a word, but NO spacers
 pPhrase :: Parser String String
-pPhrase = pList pAlphaSpace
-
+pPhrase =  pList pAlphaSpace
+       
 -- | Parses a Name
 pName = pPhrase
+     <|> ((\_ l c r _ -> l++[c]++r) <$>
+          pQuotation <*> pPhrase <*> pComma <*> pPhrase <*> pQuotation)
 
 -- | Parses a rarity
 pRarity =   pToken "Basic"     Basic_R
@@ -75,15 +89,42 @@ pClass =   pToken "Neutral" Neutral
 
 -- | Parses a separator, commas by now, another kind of char
 --   if we want to support other formats than csv
-pSeparator = Parser $ \s -> case s of
-                              (c:cs) -> if c == ','
-                                        then [(c,cs)]
-                                        else []
-                              [] -> []
+pSeparator = pComma
+
+pComma = Parser $ \s -> case s of
+                          (c:cs) -> if c == ','
+                                    then [(c,cs)]
+                                    else []
+                          [] -> []
 
 
-pCard = (\name _ rarity _ set _ clss _ -> Card name clss rarity set)
-        <$> pName    <*> pSeparator
-        <*> pRarity  <*> pSeparator
-        <*> pSet     <*> pSeparator
-        <*> pClass   <*> pSeparator
+pEOL = Parser $ \s -> case s of
+                        (c:cs) -> if c == '\n'
+                                  then [(c,cs)]
+                                  else []
+                        [] -> []
+
+
+pQuantity :: Parser String Int
+pQuantity = Parser $ \s -> case s of
+                             (c:cs) -> if   isNumber c
+                                       then [(read [c] :: Int,cs)]
+                                       else []
+                             [] -> []
+
+
+-- | Finally, this Parses a Card
+pCard :: Parser String (Card,Int)
+pCard = (\name _ rarity _ set _ clss _ normal _ golden _
+         -> (Card name clss rarity set, if normal+golden > 2
+                                        then 2
+                                        else normal+golden))
+        <$> pName     <*> pSeparator
+        <*> pRarity   <*> pSeparator
+        <*> pSet      <*> pSeparator
+        <*> pClass    <*> pSeparator
+        <*> pQuantity <*> pSeparator
+        <*> pQuantity <*> pEOL
+
+pCollection :: Parser String [(Card,Int)]
+pCollection = pList pCard

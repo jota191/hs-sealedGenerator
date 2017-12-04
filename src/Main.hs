@@ -18,3 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Main where
+import Parser
+import ParserCombinators
+
+main = readFile "../HMCData/Lando.csv" >>= \f ->
+       return $ length $ fst $ (runP pCollection f)!!0
