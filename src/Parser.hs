@@ -44,7 +44,7 @@ pQuotation = Parser $ \s -> case s of
                               []     -> []
 
 
--- | Parses a Phrase, that is a word, but NO spacers
+-- | Parses a Phrase (a word, with ANY spacers)
 pPhrase :: Parser String String
 pPhrase =  pList pAlphaSpace
        
@@ -53,7 +53,7 @@ pName = pPhrase
      <|> ((\_ l c r _ -> l++[c]++r) <$>
           pQuotation <*> pPhrase <*> pComma <*> pPhrase <*> pQuotation)
 
--- | Parses a rarity
+-- | Parses a Rarity
 pRarity =   pToken "Basic"     Basic_R
         <|> pToken "Common"    Common
         <|> pToken "Rare"      Rare
@@ -76,6 +76,7 @@ pSet =  pToken "Promo"     Promo
     <|> pToken "Un'Goro"   UnGoro 
     <|> pToken "KFT"       KFT
 
+-- | Parses a Class
 pClass =   pToken "Neutral" Neutral
       <|> pToken "Druid"    Druid
       <|> pToken "Hunter"   Hunter
@@ -88,7 +89,7 @@ pClass =   pToken "Neutral" Neutral
       <|> pToken "Warrior"  Warrior
 
 -- | Parses a separator, commas by now, another kind of char
---   if we want to support other formats than csv
+--   if we want to support any other formats (csv by now)
 pSeparator = pComma
 
 pComma = Parser $ \s -> case s of

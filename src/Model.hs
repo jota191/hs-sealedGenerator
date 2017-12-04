@@ -28,8 +28,8 @@ data Set = Promo | Basic_E    | Classic | Naxx
          | KFT
          deriving (Eq,Ord,Show)
 {-
-Ord instance will have sense since the last one is the most recent,
-except for Promo, Show could be implemented better if required
+Ord instance will make sense since the last one is the most recent,
+(except for Promo), Show could be implemented if required
 -}
 
 data Class = Neutral | Druid | Hunter | Mage    | Paladin
