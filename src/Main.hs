@@ -21,6 +21,46 @@ module Main where
 import Parser
 import ParserCombinators
 import Model
+import System.Random
 
-main = readFile "../HMCData/Lando.csv" >>= \f ->
-       mapM (\c -> printCard (fst c)) $ fst $ (runP pCollection f)!!0
+main = do file   <- readFile "../HMCData/Lando.csv"
+          col    <- return $ fst $ (runP pCollection file)!!0
+          kftcol <- return $ map fst $
+            filter (\(card,n) -> set card == KFT && n/=0) col
+          (Splitted c r e l) <- return $ splitByRarity kftcol
+          rng <- ((flip mod) 100) <$> (randomIO :: IO Int)
+          do if rng < 95
+               then do c <- getRandomFromList r
+                       printCard c
+               else if rng < 99
+                    then do c <- getRandomFromList e
+                            printCard c
+                    else do c <- getRandomFromList l
+                            printCard c
+          selectCard (Splitted c r e l)
+          selectCard (Splitted c r e l)
+          selectCard (Splitted c r e l)
+          selectCard (Splitted c r e l)
+          
+
+selectCard :: Splitted -> IO ()
+selectCard (Splitted c r e l)
+  = do rng <- ((flip mod) 100) <$> (randomIO :: IO Int)
+       do if rng < 70
+            then do c <- getRandomFromList c
+                    printCard c
+            else if rng < 95
+            then do c <- getRandomFromList r
+                    printCard c
+            else if rng < 99
+                 then do c <- getRandomFromList e
+                         printCard c
+                 else do c <- getRandomFromList l
+                         printCard c
+          
+exp = KFT
+
+getRandomFromList :: [a] -> IO a
+getRandomFromList l = do rng1 <- randomIO :: IO Int
+                         index <- return $ rng1 `mod` (length l)
+                         return (l!!index)

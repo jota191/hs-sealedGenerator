@@ -63,3 +63,28 @@ printCard card = case rarity card of
                            show (set  card))
                  >>
                  setSGR [Reset]
+
+-- | A container to split a collection by rarity
+data Splitted = Splitted { common    :: Collection,
+                           rare      :: Collection,
+                           epic      :: Collection,
+                           legendary :: Collection
+                        }
+
+splitByRarity :: Collection
+  -> Splitted --(Collection,Collection,Collection,Collection)
+
+splitByRarity col = splitByRarityAcc col (Splitted [] [] [] [])
+
+splitByRarityAcc :: Collection
+  -> Splitted
+  -> Splitted
+
+splitByRarityAcc []     acc = acc
+splitByRarityAcc (card:crds) (Splitted c r e l)
+  = case rarity card of
+      Basic_R   -> splitByRarityAcc crds (Splitted (card:c) r e l)
+      Common    -> splitByRarityAcc crds (Splitted (card:c) r e l)
+      Rare      -> splitByRarityAcc crds (Splitted c (card:r) e l)
+      Epic      -> splitByRarityAcc crds (Splitted c r (card:e) l)
+      Legendary -> splitByRarityAcc crds (Splitted c r e (card:l))
