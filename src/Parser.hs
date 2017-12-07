@@ -75,9 +75,10 @@ pSet =  pToken "Promo"     Promo
     <|> pToken "MSG"       MSG
     <|> pToken "Un'Goro"   UnGoro 
     <|> pToken "KFT"       KFT
+    <|> pToken "KAC"       KAC
 
 -- | Parses a Class
-pClass =   pToken "Neutral" Neutral
+pClass =  pToken "Neutral" Neutral
       <|> pToken "Druid"    Druid
       <|> pToken "Hunter"   Hunter
       <|> pToken "Mage"     Mage

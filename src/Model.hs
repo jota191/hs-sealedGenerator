@@ -25,7 +25,7 @@ import System.Console.ANSI
 data Set = Promo | Basic_E    | Classic | Naxx
          | GvG   | Blackrock  | TGT     | LoE
          | TOG   | Kara       | MSG     | UnGoro -- written Un'Goro
-         | KFT
+         | KFT   | KAC
          deriving (Eq,Ord,Show)
 {-
 Ord instance will make sense since the last one is the most recent,
